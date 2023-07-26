@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.12)
+project(MyProject)
+
+# 컴파일러 옵션 설정
+set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O2 -DMY_CONSTANT=42")
+
+# 라이브러리 디렉토리 설정
+set(LIBDIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/)   # libmycode3.a가 lib 폴더에 있으므로 해당 디렉토리를 지정합니다.
+set(EXT_LIBDIR /DDS/lib/)   # libndds.a가 외부에 /DDS/lib/에 있으므로 해당 디렉토리를 지정합니다.
+
+# 실행 파일 디렉토리 설정
+set(BINDIR ${CMAKE_CURRENT_SOURCE_DIR}/Release/bin/)   # 실행 파일이 생성될 폴더를 지정합니다.
+
+# 라이브러리 이름 설정
+set(LIBRARY mycode3)   # lib 라이브러리의 이름을 지정합니다.
+
+# 모든 .cpp 파일 가져오기
+file(GLOB SRCS "*.cpp")
+
+# 헤더 파일 디렉토리 설정
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+# 라이브러리 빌드
+add_library(${LIBRARY} STATIC ${SRCS})
+target_link_libraries(${LIBRARY} INTERFACE ${EXT_LIBDIR}/libndds.a)
+
+# 실행 파일 빌드
+add_executable(myapp ${SRCS})
+target_link_libraries(myapp PRIVATE ${LIBRARY})
+
+# 실행 파일과 라이브러리가 생성되는 경로 설정
+set_target_properties(myapp ${LIBRARY} PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${BINDIR}
+  ARCHIVE_OUTPUT_DIRECTORY ${LIBDIR}
+  LIBRARY_OUTPUT_DIRECTORY ${LIBDIR}
+)
+
+# clean 작업
+add_custom_target(clean-all
+  COMMAND ${CMAKE_COMMAND} -E remove_directory ${BINDIR}
+  COMMAND ${CMAKE_COMMAND} -E remove_directory ${LIBDIR}
+)
